@@ -1,0 +1,452 @@
+---
+openapi: 3.0.0
+info:
+  title: API Import der Produkte
+  description: Import der Produkte in die Swiss Life Commerce Cloud über SAP Cloud Integration
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/SwissLifeCPI/CommerceCloudProducts/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: https://{environment}-iflmap.hcisbp.eu2.hana.ondemand.com/http/sendPData
+  description: Cloud Integration Portal
+  variables:
+    environment:
+      default: e700131
+      enum:
+      - ?????
+      - e700131
+      - l700337
+- url: https://oauthasservices-{tokenEnviroment}.eu2.hana.ondemand.com/oauth2/api/v1/token
+  description: oAuth url token
+  variables:
+    tokenEnviroment:
+      default: ed680a4f8
+      enum:
+      - ?????
+      - ed680a4f8
+      - ea187946e
+- url: https://oauthasservices-{tokenEnviroment}.eu2.hana.ondemand.com/oauth2/api/v1/authorize
+  description: oAuth url authorize
+  variables:
+    tokenEnviroment:
+      default: ed680a4f8
+      enum:
+      - ?????
+      - ed680a4f8
+      - ea187946e
+security:
+- accessCode:
+  - read
+  - write
+tags:
+- name: Products
+paths:
+  /Products:
+    put:
+      summary: add or update products
+      description: fügt Produkte hinzu oder updatet diese.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Products'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/batchPartResponse'
+        "400":
+          description: missing properties
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/batchPartResponseError'
+  /ping:
+    get:
+      summary: Ist der Server erreichbar
+      description: Gib es noch nicht !
+      responses:
+        "200":
+          description: OK
+      security: []
+components:
+  schemas:
+    Products:
+      properties:
+        Product:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/Product'
+          - type: object
+    Product:
+      required:
+      - externalId
+      - name
+      - supercategories
+      type: object
+      properties:
+        externalId:
+          type: string
+          example: 12343awd
+        summary:
+          type: string
+        onlineDate:
+          type: string
+          format: date
+          example: 2020-10-01
+        offlineDate:
+          type: string
+          format: date
+          example: 2022-10-31
+        internalDescription:
+          type: string
+        name:
+          type: string
+          example: Product XY
+        code:
+          type: string
+        qualitativeCharacteristics:
+          type: string
+        factoryName:
+          type: string
+          description: Für P-Produkte fest SWL, Liste aus der >Commmerce Cloud
+          example: SWL
+        factoryBrand:
+          type: object
+          properties:
+            FactoryBrandCodeList:
+              oneOf:
+              - $ref: '#/components/schemas/FactoryBrandCodeList'
+        catalogVersion:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/CatalogVersion'
+        salesChannel:
+          type: object
+          properties:
+            SalesChannelCodeList:
+              type: object
+              allOf:
+              - $ref: '#/components/schemas/SalesChannelCodeList'
+        pyramidTopic:
+          type: object
+          properties:
+            PyramidTopicCodeList:
+              type: object
+              oneOf:
+              - $ref: '#/components/schemas/PyramidTopicCodeList'
+        salesOrganisation:
+          type: object
+          properties:
+            SalesOrganisationEnum:
+              type: object
+              allOf:
+              - $ref: '#/components/schemas/SalesOrganisationEnum'
+        supercategories:
+          type: object
+          properties:
+            Category:
+              allOf:
+              - $ref: '#/components/schemas/supercategories'
+              - type: object
+        localizedAttributes:
+          type: object
+          properties:
+            Localized__Product:
+              type: object
+              allOf:
+              - $ref: '#/components/schemas/Localized___Product'
+        vendors:
+          type: object
+          properties:
+            Vendor:
+              type: object
+              oneOf:
+              - $ref: '#/components/schemas/Vendor'
+    supercategories:
+      allOf:
+      - $ref: '#/components/schemas/Category'
+    Category:
+      type: object
+      properties:
+        code:
+          type: string
+          description: List ist definiert in der Commerce Cloud
+          example: SwisslifeProductPyramid
+        catalogVersion:
+          allOf:
+          - $ref: '#/components/schemas/catalogVersion'
+    catalogVersion:
+      type: object
+      properties:
+        CatalogVersion:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/CatalogVersion'
+    CatalogVersion:
+      type: object
+      properties:
+        version:
+          type: string
+          example: Staged
+          enum:
+          - Staged
+        name:
+          type: string
+        catalog:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/catalog'
+    catalog:
+      type: object
+      properties:
+        Catalog:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/Catalog'
+    Catalog:
+      type: object
+      properties:
+        id:
+          type: string
+          example: swisslifeProductCatalog
+          enum:
+          - swisslifeProductCatalog
+    Localized___Product:
+      type: object
+      properties:
+        language:
+          type: string
+          example: de
+        internalDescription:
+          type: string
+        summary:
+          type: string
+        name:
+          type: string
+          example: Produkt xyz
+        qualitativeCharacteristics:
+          type: string
+    Localized___SalesChannelCodeList:
+      type: object
+      properties:
+        value:
+          type: string
+          enum:
+          - Physical
+          - Online
+        language:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/Localized___SalesChannelCodeList'
+    SalesChannelCodeList:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+          - Physical
+          - Online
+        localizedAttributes:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/localizedAttributes'
+    localizedAttributes:
+      type: object
+      properties:
+        Localized___SalesChannelCodeList:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/Localized___SalesChannelCodeList'
+    Localized___FactoryBrandCodeList:
+      type: object
+      properties:
+        language:
+          type: string
+          oneOf:
+          - $ref: '#/components/schemas/language'
+        value:
+          type: string
+          description: fester Wert
+          example: Swiss
+          enum:
+          - Swiss
+    FactoryBrandCodeList:
+      type: object
+      properties:
+        code:
+          type: string
+          example: SWISS
+          enum:
+          - SWISS
+        localizedAttributes:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/Localized___FactoryBrandCodeList'
+    Vendor:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Ist definiert in der Commerce Cloud, für P-Produkte fix SWL
+          example: SWL
+    SalesOrganisationEnum:
+      type: object
+      properties:
+        code:
+          type: string
+          example: SLAD
+          enum:
+          - SLAD
+          - SLS
+    PyramidTopicCodeList:
+      type: object
+      properties:
+        code:
+          type: string
+        value:
+          type: string
+        localizedAttributes:
+          type: object
+          properties:
+            Localized___PyramidTopicCodeList:
+              type: object
+              oneOf:
+              - $ref: '#/components/schemas/Localized___PyramidTopicCodeList'
+    Localized___PyramidTopicCodeList:
+      type: object
+      properties:
+        language:
+          type: string
+          oneOf:
+          - $ref: '#/components/schemas/language'
+        value:
+          type: string
+          description: Liste ist definiert in der Commerce Cloud
+          example: GV
+    language:
+      type: string
+      example: de
+      enum:
+      - de
+      - fr
+      - it
+      - en
+    batchPartResponse:
+      type: object
+      properties:
+        batchChangeSetResponse:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/batchChangeSetResponse'
+    batchChangeSetResponse:
+      type: object
+      properties:
+        batchChangeSetPartResponse:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/batchChangeSetPartResponse'
+    batchChangeSetPartResponse:
+      type: object
+      properties:
+        headers:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/responseHeaders'
+        body:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/bodyResponse'
+        statusInfo:
+          type: string
+          example: created
+        contentId:
+          type: string
+        statusCode:
+          type: string
+          example: "200"
+    batchChangeSetPartResponseError:
+      type: object
+      properties:
+        headers:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/responseHeaders'
+        body:
+          type: string
+          example: content of wrong values
+        statusInfo:
+          type: string
+          example: Bad Request
+    batchChangeSetResponseError:
+      type: object
+      properties:
+        batchChangeSetPartResponse:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/batchChangeSetPartResponseError'
+    batchPartResponseError:
+      type: object
+      properties:
+        batchChangeSetResponse:
+          type: object
+          oneOf:
+          - $ref: '#/components/schemas/batchChangeSetResponseError'
+    responseHeaders:
+      type: object
+      properties:
+        Accept:
+          type: string
+        Accept-Language:
+          type: string
+        Content-Length:
+          type: string
+        DataServiceVersion:
+          type: string
+        Content-Language:
+          type: string
+        Location:
+          type: string
+    bodyResponse:
+      type: object
+      properties:
+        onlineDate:
+          type: string
+          format: Data
+        offlineDate:
+          type: string
+          format: Data
+        summary:
+          type: string
+        internalDescription:
+          type: string
+        code:
+          type: string
+          example: SWL_6917
+        name:
+          type: string
+          example: Produkt xy
+        factoryName:
+          type: string
+        description:
+          type: string
+        externalId:
+          type: string
+        qualitativeCharacteristics:
+          type: string
+        integrationKey:
+          type: string
+          example: Staged|swisslifeProductCatalog|SWL_6917
+  securitySchemes:
+    accessCode:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://oauthasservices-{enviroment}.eu2.hana.ondemand.com/oauth2/api/v1/authorize
+          tokenUrl: https://oauthasservices-{enviroment}.eu2.hana.ondemand.com/oauth2/api/v1/token
+          scopes:
+            write: erlaubt Schreibrechte
+            read: erlaubt Leserechte
